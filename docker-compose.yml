@@ -1,0 +1,67 @@
+version: '3.8'
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  user_service:
+    build: ./user-service
+    container_name: user_service
+    command: ["node", "userService.js"]
+    ports:
+      - "3004:3004"
+    depends_on:
+      - rabbitmq
+    environment:
+      - USER_SERVICE_PORT=3004
+
+  email_service:
+    build: ./email-service
+    container_name: email_service
+    command: ["node", "emailService.js"]
+    ports:
+      - "3001:3001"
+    depends_on:
+      - rabbitmq
+    environment:
+      - EMAIL_SERVICE_PORT=3001
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - RABBITMQ_URL=${RABBITMQ_URL}
+
+  push_service:
+    build: ./push-service
+    container_name: push_service
+    command: ["node", "pushService.js"]
+    ports:
+      - "3002:3002"
+    depends_on:
+      - rabbitmq
+    environment:
+      - PUSH_SERVICE_PORT=3002
+      - FCM_CREDENTIALS=${FCM_CREDENTIALS}
+      - RABBITMQ_URL=${RABBITMQ_URL}
+    volumes:
+      - ./secrets:/secrets:ro
+
+  gateway:
+    build: ./gateway
+    container_name: gateway
+    command: ["node", "gateway.js"]
+    ports:
+      - "3000:3000"
+    depends_on:
+      - rabbitmq
+      - user_service
+    environment:
+      - GATEWAY_PORT=3000
+      - USER_SERVICE_PORT=3004
+      - RABBITMQ_URL=${RABBITMQ_URL}

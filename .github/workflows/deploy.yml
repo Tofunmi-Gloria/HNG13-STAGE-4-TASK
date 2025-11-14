@@ -1,0 +1,32 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies for services
+        run: |
+          cd gateway && npm ci || true
+          cd ../user-service && npm ci || true
+          cd ../email-service && npm ci || true
+          cd ../push-service && npm ci || true
+          cd ..
+
+      - name: Build Docker images
+        run: docker-compose build --no-cache
+
+      - name: Simulate Deploy
+        run: echo "Build complete. Add deployment steps to push images to your host if required."
