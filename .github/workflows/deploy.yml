@@ -21,7 +21,7 @@ jobs:
         run: |
           cd gateway && npm ci || true
           cd ../user-service && npm ci || true
-          cd ../email-service && npm ci || true
+          cd ../emailService && npm ci || true
           cd ../push-service && npm ci || true
           cd ..
 
