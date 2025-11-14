@@ -26,7 +26,7 @@ jobs:
           cd ..
 
       - name: Build Docker images
-        run: docker-compose build --no-cache
+        run: docker compose build --no-cache
 
       - name: Simulate Deploy
         run: echo "Build complete. Add deployment steps to push images to your host if required."
